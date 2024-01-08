@@ -18,6 +18,7 @@ add_library(
         decoder/VideoDecoder.cc
         utils/CThread.cpp
         render/video/NativeRender.cc
+        player/MediaPlayer.cc
 )
 
 

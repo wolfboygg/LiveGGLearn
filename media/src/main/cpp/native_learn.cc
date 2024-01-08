@@ -6,6 +6,7 @@
 #include <jni.h>
 #include "decoder/VideoDecoder.h"
 #include "render/video/NativeRender.h"
+#include "player/MediaPlayer.h"
 
 
 extern "C"
@@ -15,14 +16,11 @@ Java_com_putong_media_JNIHelper_getFFmpegInfo(JNIEnv *env,
                                               jstring path,
                                               jobject surface) {
   const char *video_path = env->GetStringUTFChars(path, 0);
-  const char *config_info = avformat_configuration();
-  NativeRender *render = new NativeRender(env, surface);
-  VideoDecoder *videoDecoder = new VideoDecoder();
-  videoDecoder->SetVideoRender(render);
-  videoDecoder->Init(video_path);
+  MediaPlayer *player = new MediaPlayer(env, surface);
+  player->Init(video_path);
   env->ReleaseStringUTFChars(path, video_path);
-  int render_width = videoDecoder->GetRenderWidth();
-  int render_height = videoDecoder->GetRenderHeight();
+  int render_width = player->GetVideoRenderWidth();
+  int render_height = player->GetVideoRenderHeight();
   jintArray array = env->NewIntArray(2);
   jint *arr = env->GetIntArrayElements(array, NULL);
   LOGD("native_learn:width:%d, height:%d\n", render_width, render_height);
@@ -32,5 +30,4 @@ Java_com_putong_media_JNIHelper_getFFmpegInfo(JNIEnv *env,
   LOGD("native_learn:width:%d, height:%d\n", *(arr + 0), *(arr + 1));
   env->SetIntArrayRegion(array, 0, 2, arr);
   return array;
-//  return env->NewStringUTF(config_info);
 }
