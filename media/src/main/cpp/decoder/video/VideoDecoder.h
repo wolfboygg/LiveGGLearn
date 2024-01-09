@@ -5,8 +5,9 @@
 #ifndef LIVEGGLEARN_VIDEODECODER_H
 #define LIVEGGLEARN_VIDEODECODER_H
 
-#include "../common_header_def.h"
-#include "../render/video/NativeRender.h"
+#include "../../common_header_def.h"
+#include "../../render/video/NativeRender.h"
+#include "../audio/AudioDecoder.h"
 
 class VideoDecoder {
  public:
@@ -27,6 +28,17 @@ class VideoDecoder {
   int GetRenderWidth();
 
   int GetRenderHeight();
+
+  /** 同步 视频向音频同步 业界常用方案*/
+  double AVSyncFirst();
+
+  /** 同步 音频向视频同步 视频通过帧率来控制速度 */
+  double AVSyncSecond();
+
+  /** 向一个统一的系统时钟进行同步 */
+  double AVSyncThird();
+
+  void SetAudioDecoder(AudioDecoder *decoder);
 
  public:
   static void StartVideoDecoder(void *);
@@ -57,6 +69,10 @@ class VideoDecoder {
 
   uint8_t  *m_FrameBuffer = NULL;
   SwsContext *m_SwsContext = NULL;
+
+  AudioDecoder *m_AudioDecoder = NULL;
+
+  AVRational m_StreamTimeBase;
 
 };
 

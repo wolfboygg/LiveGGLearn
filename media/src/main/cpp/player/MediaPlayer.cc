@@ -7,11 +7,19 @@
 MediaPlayer::MediaPlayer(JNIEnv *env, jobject surface) : env(env) {
   m_VideoDecoder = new VideoDecoder();
   m_VideoRender = new NativeRender(env, surface);
+
+  m_AudioDecoder = new AudioDecoder();
+  m_AudioRender = new AudioRender();
+
+  m_VideoDecoder->SetAudioDecoder(m_AudioDecoder);
 }
 
 void MediaPlayer::Init(const char *path) {
   m_VideoDecoder->SetVideoRender(m_VideoRender);
   m_VideoDecoder->Init(path);
+
+  m_AudioDecoder->SetAudioRender(m_AudioRender);
+  m_AudioDecoder->Init(path);
 }
 
 int MediaPlayer::GetVideoRenderWidth() {

@@ -15,9 +15,11 @@ add_library(
         media
         SHARED
         native_learn.cc
-        decoder/VideoDecoder.cc
+        decoder/video/VideoDecoder.cc
+        decoder/audio/AudioDecoder.cc
         utils/CThread.cpp
         render/video/NativeRender.cc
+        render/audio/AudioRender.cc
         player/MediaPlayer.cc
 )
 

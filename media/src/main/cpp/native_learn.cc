@@ -4,7 +4,7 @@
 
 #include "common_header_def.h"
 #include <jni.h>
-#include "decoder/VideoDecoder.h"
+#include "decoder/video/VideoDecoder.h"
 #include "render/video/NativeRender.h"
 #include "player/MediaPlayer.h"
 

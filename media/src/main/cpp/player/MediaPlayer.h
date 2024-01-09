@@ -5,7 +5,8 @@
 #ifndef LIVEGGLEARN_MEDIAPLAYER_H
 #define LIVEGGLEARN_MEDIAPLAYER_H
 
-#include "../decoder/VideoDecoder.h"
+#include "../decoder/video/VideoDecoder.h"
+#include "../decoder/audio/AudioDecoder.h"
 #include "../common_header_def.h"
 
 /**
@@ -30,8 +31,10 @@ class MediaPlayer {
   VideoDecoder *m_VideoDecoder = NULL;
   NativeRender *m_VideoRender = NULL;
 
-  JNIEnv *env = NULL;
+  AudioDecoder *m_AudioDecoder = NULL;
+  AudioRender *m_AudioRender = NULL;
 
+  JNIEnv *env;
 };
 
 

@@ -44,6 +44,7 @@ void VideoDecoder::Init(const char *url) {
   }
   // 5.获取这个流信息的解码器
   AVCodecParameters *codecParameters = m_AVFormatContext->streams[m_StreamIndex]->codecpar;
+  m_StreamTimeBase = m_AVFormatContext->streams[m_StreamIndex]->time_base;
   m_AVCodec = avcodec_find_decoder(codecParameters->codec_id);
   if (m_AVCodec == NULL) {
     CleanResource();
@@ -178,10 +179,11 @@ void VideoDecoder::RunVideoDecoder() {
              m_AVFrame,
              m_AVFrameCount++,
              frameCount++);
-        int delay = 1000 / m_fps;
-        LOGD("VideoDecoder delay:%d\n", delay);
+        double delay = AVSyncFirst();
+//        int delay = 1000 / m_fps;
+        av_usleep(1000000 * delay);
+        LOGD("VideoDecoder delay:%f\n", delay);
         OnFrameAvailable(m_AVFrame);
-        av_usleep(1000 * delay);
       }
     }
     // 读取成功之后送到解码器
@@ -234,4 +236,46 @@ int VideoDecoder::GetRenderWidth() {
 
 int VideoDecoder::GetRenderHeight() {
   return m_RenderHeight;
+}
+
+double VideoDecoder::AVSyncFirst() {
+  // 视频同步音频 那就需要在解码视频的时候获取对应的音频播放时间来进行处理
+  // 可以通过回调函数处理 也可以通过友元函数进行获取
+  double frame_delay = 1.0 / m_fps;
+  double extra_delay = m_AVFrame->repeat_pict / (2 * m_fps);
+  double delay = extra_delay + frame_delay;
+  double audio_clock = m_AudioDecoder->GetAudioClock();
+  LOGD("VideoDecoder::AVSyncFirst delay11111:%f", delay);
+  double video_clock = m_AVFrame->best_effort_timestamp * av_q2d(m_StreamTimeBase);
+  LOGD("VideoDecoder::AVSyncFirst audio_clock:%f", audio_clock);
+  LOGD("VideoDecoder::AVSyncFirst video_clock:%f", video_clock);
+  // 定义一个同步的阈值
+  /**
+  * 1、delay < 0.04, 同步阈值就是0.04
+  * 2、delay > 0.1 同步阈值就是0.1
+  * 3、0.04 < delay < 0.1 ，同步阈值是delay
+  */
+  LOGD("VideoDecoder::AVSyncFirst delay11111:%f", delay);
+  double diff = video_clock - audio_clock;
+  LOGD("VideoDecoder::AVSyncFirst diff:%f", diff);
+  double sync = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
+  // 然后开始休眠
+  if (diff <= -sync) {
+    // 减小时间进行同步
+    delay = FFMAX(0, delay + diff);
+  } else if (diff > sync) {
+    delay = delay + diff;
+  }
+  LOGD("VideoDecoder::AVSyncFirst delay22222:%f", delay);
+  return delay;
+}
+
+double VideoDecoder::AVSyncSecond() {}
+
+double VideoDecoder::AVSyncThird() {
+
+}
+
+void VideoDecoder::SetAudioDecoder(AudioDecoder *decoder) {
+  this->m_AudioDecoder = decoder;
 }
